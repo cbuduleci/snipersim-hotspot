@@ -271,7 +271,7 @@ vdd[] = %s
     print '[HOTSPOT] Frequency: ' + str(cpu_frequency_ghz)
 
     # Preheating the chip
-    os.system('%s -c %s -f %s -p %s -o %s -steady_file %s -model_type %s -grid_rows %f -grid_cols %f -sampling_intvl %f -base_proc_freq %f -s_sink %f -s_spreader %f >/dev/null' % (
+    os.system('%s -c %s -f %s -p %s -o %s -steady_file %s -model_type %s -grid_rows %f -grid_cols %f -grid_steady_file %s -sampling_intvl %f -base_proc_freq %f -s_sink %f -s_spreader %f >/dev/null' % (
       os.path.join(os.getenv('SNIPER_ROOT'), 'hotspot/hotspot'),
       os.path.join(os.getenv('SNIPER_ROOT'), 'hotspot/hotspot.config'),
       self.floorplan_file,
@@ -281,6 +281,7 @@ vdd[] = %s
       self.calling_mode,
       self.GRID_ROWS,
       self.GRID_COLS,
+      self.results_folder + 'hotspot_temperature_grid.init',
       sampeling_interval,
       cpu_frequency_ghz,
       self.chip_width + (self.chip_width * self.HEAT_SINK_INCREASE_FACTOR),
