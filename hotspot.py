@@ -120,6 +120,9 @@ class HotSpot:
     row_power = ''
     for coreIndex in range(sim.config.ncores):
       exec_unit_power = power['Core'][coreIndex]['Execution Unit/Runtime Dynamic']
+      # In case a custom unit (e.g. DIR or VP) is present add it to the execution unit
+      if (sim.config.get('custom_unit/type') != 'none'):
+        exec_unit_power += power['Core'][coreIndex]['Custom Unit/Runtime Dynamic']
       l1_cache_power = power['Core'][coreIndex]['Load Store Unit/Runtime Dynamic']
       instr_fetch_unit_power = (power['Core'][coreIndex]['Instruction Fetch Unit/Runtime Dynamic'] + power['Core'][coreIndex]['Renaming Unit/Runtime Dynamic'])
       l2_cache_unit_power =power['Core'][coreIndex]['L2/Runtime Dynamic']
@@ -170,6 +173,9 @@ vdd[] = %s
 
   def create_floorplan(self, result):
     exec_unit_area = result['Core'][0]['Execution Unit/Area'] / 1e6 # mm^2 to m^2
+    # In case a custom unit (e.g. DIR or VP) is present add it to the execution unit
+    if (sim.config.get('custom_unit/type') != 'none'):
+      exec_unit_area += result['Core'][0]['Custom Unit/Area'] / 1e6 # mm^2 to m^2
     instr_fetch_unit_area = (result['Core'][0]['Instruction Fetch Unit/Area'] + result['Core'][0]['Renaming Unit/Area']) / 1e6 # mm^2 to m^2
     l1_cache_area = result['Core'][0]['Load Store Unit/Area'] / 1e6 # mm^2 to m^2
     paging_unit_area = result['Core'][0]['Memory Management Unit/Area'] / 1e6 # mm^2 to m^2
