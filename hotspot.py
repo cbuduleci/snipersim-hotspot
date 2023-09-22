@@ -63,8 +63,11 @@ class HotSpot:
   def hook_pre_stat_write(self, prefix):
     if not self.in_stats_write:
       self.update()
-
-  def hook_sim_end(self):
+  
+  def hook_sim_end(self):   
+    # Perform a last update before the simulation ends (to run on shorter benchmarks)
+    self.update(True)
+    
     if self.name_last:
       sim.util.db_delete(self.name_last, True)
 
@@ -72,10 +75,10 @@ class HotSpot:
       self.run_temperature_simulation()
     else:
       print >> sys.stderr, "[HOTSPOT] ERROR - The power trace file was not created and the simulation ended."
-      print >> sys.stderr, "[HOTSPOT] Possible solution: try to decrease the sampling time." 
+      print >> sys.stderr, "[HOTSPOT] Possible solution: try to decrease the sampling time."
 
-  def update(self):
-    if sim.stats.time() == self.time_last_power:
+  def update(self, force_pwr = False):
+    if (sim.stats.time() == self.time_last_power) or not force_pwr:
       # Time did not advance: don't recompute
       return
 
@@ -89,6 +92,9 @@ class HotSpot:
       # If we also have a previous snapshot: update power
       if self.name_last:
         power = self.run_power(self.name_last, current)
+        self.generate_power_trace(power)
+      if force_pwr:
+        power = self.run_power(current, None)
         self.generate_power_trace(power)
       # Clean up previous last
       if self.name_last:
@@ -151,17 +157,18 @@ vdd[] = %s
     cfg.close()
     return configfile
 
-  def run_power(self, name0, name1):
+  def run_power(self, t0, t1):
     outputbase = os.path.join(self.results_folder, 'hotspot_power_temp')
-
     configfile = self.gen_config(outputbase)
+    _t0 = t0 or 'roi-begin'
+    _t1 = t1 or 'roi-end'
 
     os.system('unset PYTHONHOME; %s -d %s -o %s -c %s --partial=%s:%s --no-graph --no-text' % (
       os.path.join(os.getenv('SNIPER_ROOT'), 'tools/mcpat.py'),
       sim.config.output_dir,
       outputbase,
       configfile,
-      name0, name1
+      _t0, _t1
     ))
 
     result = {}
@@ -348,6 +355,7 @@ vdd[] = %s
       fpStats.write('  min: ' + str(min(values)) + '\n')
       fpStats.write('  max: ' + str(max(values)) + '\n')
       fpStats.write('  avg: ' + str(avgVal) + '\n\n')
+    fpStats.close()
 
 # All scripts execute in global scope
 hotspot = HotSpot()
