@@ -78,7 +78,7 @@ class HotSpot:
       print >> sys.stderr, "[HOTSPOT] Possible solution: try to decrease the sampling time."
 
   def update(self, force_pwr = False):
-    if (sim.stats.time() == self.time_last_power) or not force_pwr:
+    if (sim.stats.time() == self.time_last_power) and not force_pwr:
       # Time did not advance: don't recompute
       return
 
